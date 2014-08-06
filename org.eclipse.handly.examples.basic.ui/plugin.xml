@@ -233,5 +233,20 @@
         </resourceServiceProvider>
     </extension>
 
+<!-- hand-written -->
+
+   <extension
+         id="fooNature"
+         name="Foo Project Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="org.eclipse.handly.internal.examples.basic.ui.model.FooProjectNature">
+         </run>
+      </runtime>
+      <requires-nature
+            id="org.eclipse.xtext.ui.shared.xtextNature">
+      </requires-nature>
+   </extension>
 
 </plugin>

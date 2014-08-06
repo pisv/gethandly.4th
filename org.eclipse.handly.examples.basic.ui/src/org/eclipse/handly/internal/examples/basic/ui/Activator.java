@@ -13,6 +13,7 @@ package org.eclipse.handly.internal.examples.basic.ui;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.handly.examples.basic.ui.internal.FooActivator;
+import org.eclipse.handly.internal.examples.basic.ui.model.FooModelManager;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -38,11 +39,19 @@ public class Activator
     public void start(BundleContext bundleContext) throws Exception
     {
         super.start(bundleContext);
+        FooModelManager.INSTANCE.startup();
     }
 
     @Override
     public void stop(BundleContext bundleContext) throws Exception
     {
-        super.stop(bundleContext);
+        try
+        {
+            FooModelManager.INSTANCE.shutdown();
+        }
+        finally
+        {
+            super.stop(bundleContext);
+        }
     }
 }
