@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.eclipse.handly.examples.basic.ui.model;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.handly.internal.examples.basic.ui.model.FooModelManager;
 
 /**
@@ -27,7 +29,27 @@ public class FooModelCore
     {
         return FooModelManager.INSTANCE.getFooModel();
     }
-    
+
+    /**
+     * Returns the Foo file corresponding to the given file, 
+     * or <code>null</code> if unable to associate the given file 
+     * with a Foo file.
+     *
+     * @param file the given file (maybe <code>null</code>)
+     * @return the Foo file corresponding to the given file, 
+     *  or <code>null</code> if unable to associate the given file 
+     *  with a Foo file
+     */
+    public static IFooFile create(IFile file)
+    {
+        if (file == null)
+            return null;
+        if (file.getParent().getType() != IResource.PROJECT)
+            return null;
+        IFooProject project = create(file.getProject());
+        return project.getFooFile(file.getName());
+    }
+
     /**
      * Returns the Foo project corresponding to the given project.
      * <p>
@@ -45,7 +67,7 @@ public class FooModelCore
             return null;
         return getFooModel().getFooProject(project.getName());
     }
-    
+
     private FooModelCore()
     {
     }

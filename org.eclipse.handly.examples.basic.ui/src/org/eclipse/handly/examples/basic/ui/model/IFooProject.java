@@ -11,6 +11,7 @@
 package org.eclipse.handly.examples.basic.ui.model;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.handly.internal.examples.basic.ui.model.FooProjectNature;
 import org.eclipse.handly.model.IHandle;
 
@@ -24,6 +25,28 @@ public interface IFooProject
      * Foo project nature id.
      */
     String NATURE_ID = FooProjectNature.ID;
+
+    /**
+     * Returns the Foo file with the given name in this project, or 
+     * <code>null</code> if unable to associate the given name 
+     * with a Foo file. The name has to be a valid file name. 
+     * This is a handle-only method. The Foo file may or may not exist.
+     * 
+     * @param name the name of the Foo file (not <code>null</code>)
+     * @return the Foo file with the given name in this project, 
+     *  or <code>null</code> if unable to associate the given name 
+     *  with a Foo file 
+     */
+    IFooFile getFooFile(String name);
+
+    /**
+     * Returns the Foo files contained in this project.
+     *
+     * @return the Foo files contained in this project (never <code>null</code>)
+     * @throws CoreException if this element does not exist or if an exception 
+     *  occurs while accessing its corresponding resource
+     */
+    IFooFile[] getFooFiles() throws CoreException;
 
     /**
      * Returns the <code>IProject</code> on which this <code>IFooProject</code>

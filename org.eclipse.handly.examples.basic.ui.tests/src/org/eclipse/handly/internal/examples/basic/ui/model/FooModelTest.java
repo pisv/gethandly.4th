@@ -15,6 +15,7 @@ import java.util.Arrays;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.handly.examples.basic.ui.model.FooModelCore;
+import org.eclipse.handly.examples.basic.ui.model.IFooFile;
 import org.eclipse.handly.examples.basic.ui.model.IFooModel;
 import org.eclipse.handly.examples.basic.ui.model.IFooProject;
 import org.eclipse.handly.junit.WorkspaceTestCase;
@@ -41,6 +42,10 @@ public class FooModelTest
         assertEquals(1, fooProjects.length);
         IFooProject fooProject = fooProjects[0];
         assertEquals("Test001", fooProject.getName());
+        IFooFile[] fooFiles = fooProject.getFooFiles();
+        assertEquals(1, fooFiles.length);
+        IFooFile fooFile = fooFiles[0];
+        assertEquals("test.foo", fooFile.getName());
 
         IFooProject fooProject2 = fooModel.getFooProject("Test002");
         assertFalse(fooProject2.exists());
@@ -50,6 +55,19 @@ public class FooModelTest
         assertEquals(2, fooProjects.length);
         assertTrue(Arrays.asList(fooProjects).contains(fooProject));
         assertTrue(Arrays.asList(fooProjects).contains(fooProject2));
+        IFooFile[] fooFiles2 = fooProject2.getFooFiles();
+        assertEquals(1, fooFiles2.length);
+        IFooFile fooFile2 = fooFiles2[0];
+        assertEquals("test.foo", fooFile2.getName());
+
+        fooFile.getFile().delete(true, null);
+        assertFalse(fooFile.exists());
+        assertEquals(0, fooFile.getParent().getChildren().length);
+
+        fooFile2.getFile().move(new Path("/Test001/test.foo"), true, null);
+        assertFalse(fooFile2.exists());
+        assertEquals(0, fooProject2.getFooFiles().length);
+        assertEquals(1, fooProject.getFooFiles().length);
 
         fooProject2.getProject().close(null);
         assertFalse(fooProject2.exists());
