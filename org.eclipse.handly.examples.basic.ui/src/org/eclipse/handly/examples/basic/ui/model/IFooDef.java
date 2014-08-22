@@ -17,7 +17,7 @@ import org.eclipse.handly.model.ISourceConstruct;
  * Represents a function defined in a Foo file.
  */
 public interface IFooDef
-    extends ISourceConstruct
+    extends ISourceConstruct, IFooElement
 {
     /**
      * Parameter names property.

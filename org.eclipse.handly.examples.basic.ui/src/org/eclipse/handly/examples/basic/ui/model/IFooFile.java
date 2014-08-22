@@ -17,7 +17,7 @@ import org.eclipse.handly.model.ISourceFile;
  * Represents a Foo source file.
  */
 public interface IFooFile
-    extends ISourceFile
+    extends ISourceFile, IFooElement
 {
     /**
      * Foo file extension.

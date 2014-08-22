@@ -68,6 +68,34 @@ public class FooModelCore
         return getFooModel().getFooProject(project.getName());
     }
 
+    /**
+     * Returns the Foo element corresponding to the given resource, or 
+     * <code>null</code> if unable to associate the given resource 
+     * with an element of the Foo Model.
+     *
+     * @param resource the given resource (maybe <code>null</code>)
+     * @return the Foo element corresponding to the given resource, or 
+     *  <code>null</code> if unable to associate the given resource 
+     *  with an element of the Foo Model
+     */
+    public static IFooElement create(IResource resource)
+    {
+        if (resource == null)
+            return null;
+        int type = resource.getType();
+        switch (type)
+        {
+        case IResource.PROJECT:
+            return create((IProject)resource);
+        case IResource.FILE:
+            return create((IFile)resource);
+        case IResource.ROOT:
+            return getFooModel();
+        default:
+            return null;
+        }
+    }
+
     private FooModelCore()
     {
     }

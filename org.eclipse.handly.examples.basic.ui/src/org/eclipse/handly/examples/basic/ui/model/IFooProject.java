@@ -19,7 +19,7 @@ import org.eclipse.handly.model.IHandle;
  * Represents a Foo project.
  */
 public interface IFooProject
-    extends IHandle
+    extends IHandle, IFooElement
 {
     /**
      * Foo project nature id.

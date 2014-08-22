@@ -19,22 +19,43 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.handly.examples.basic.ui.model.FooModelCore;
+import org.eclipse.handly.examples.basic.ui.model.IFooElement;
 import org.eclipse.handly.examples.basic.ui.model.IFooFile;
 import org.eclipse.handly.examples.basic.ui.model.IFooProject;
 import org.eclipse.handly.model.IHandle;
+import org.eclipse.handly.model.IHandleDelta;
 import org.eclipse.handly.model.impl.Body;
 import org.eclipse.handly.model.impl.Handle;
+import org.eclipse.handly.model.impl.HandleDelta;
 
 /**
  * This class is used by the <code>FooModelManager</code> to process 
- * resource deltas and update the Foo Model accordingly.
+ * resource deltas, convert them into Foo element deltas,
+ * and update the Foo Model accordingly.
  */
 class FooDeltaProcessor
     implements IResourceDeltaVisitor
 {
+    private HandleDelta currentDelta = new HandleDelta(
+        FooModelCore.getFooModel());
     private Set<String> oldFooProjectNames = new HashSet<String>();
+
+    /**
+     * Returns the Foo element delta built from the resource delta. 
+     * Returns an empty delta if no Foo elements were affected 
+     * by the resource change.
+     * 
+     * @return Foo element delta (never <code>null</code>)
+     */
+    public HandleDelta getDelta()
+    {
+        return currentDelta;
+    }
 
     @Override
     public boolean visit(IResourceDelta delta) throws CoreException
@@ -87,6 +108,7 @@ class FooDeltaProcessor
         {
             IFooProject fooProject = FooModelCore.create(project);
             addToModel(fooProject);
+            translateAddedDelta(delta, fooProject);
         }
         return false;
     }
@@ -99,6 +121,7 @@ class FooDeltaProcessor
         {
             IFooProject fooProject = FooModelCore.create(project);
             removeFromModel(fooProject);
+            translateRemovedDelta(delta, fooProject);
         }
         return false;
     }
@@ -116,6 +139,7 @@ class FooDeltaProcessor
                 if (project.hasNature(IFooProject.NATURE_ID))
                 {
                     addToModel(fooProject);
+                    currentDelta.insertAdded(fooProject, IHandleDelta.F_OPEN);
                 }
             }
             else
@@ -123,6 +147,7 @@ class FooDeltaProcessor
                 if (wasFooProject(project))
                 {
                     removeFromModel(fooProject);
+                    currentDelta.insertRemoved(fooProject, IHandleDelta.F_OPEN);
                 }
             }
             return false;
@@ -138,12 +163,24 @@ class FooDeltaProcessor
                 if (isFooProject)
                 {
                     addToModel(fooProject);
+                    currentDelta.insertAdded(fooProject,
+                        IHandleDelta.F_DESCRIPTION);
                 }
                 else
                 {
                     removeFromModel(fooProject);
+                    currentDelta.insertRemoved(fooProject,
+                        IHandleDelta.F_DESCRIPTION);
                 }
                 return false; // when Foo nature is added/removed don't process children
+            }
+            else
+            {
+                if (isFooProject)
+                {
+                    currentDelta.insertChanged(fooProject,
+                        IHandleDelta.F_DESCRIPTION);
+                }
             }
         }
 
@@ -185,7 +222,10 @@ class FooDeltaProcessor
         IFile file = (IFile)delta.getResource();
         IFooFile fooFile = FooModelCore.create(file);
         if (fooFile != null)
+        {
             addToModel(fooFile);
+            translateAddedDelta(delta, fooFile);
+        }
         return false;
     }
 
@@ -194,7 +234,10 @@ class FooDeltaProcessor
         IFile file = (IFile)delta.getResource();
         IFooFile fooFile = FooModelCore.create(file);
         if (fooFile != null)
+        {
             removeFromModel(fooFile);
+            translateRemovedDelta(delta, fooFile);
+        }
         return false;
     }
 
@@ -240,9 +283,46 @@ class FooDeltaProcessor
         close(element);
     }
 
+    private void translateAddedDelta(IResourceDelta delta, IFooElement element)
+    {
+        if ((delta.getFlags() & IResourceDelta.MOVED_FROM) == 0) // regular addition
+        {
+            currentDelta.insertAdded(element);
+        }
+        else
+        {
+            IFooElement movedFromElement =
+                FooModelCore.create(getResource(delta.getMovedFromPath(),
+                    delta.getResource().getType()));
+            if (movedFromElement == null)
+                currentDelta.insertAdded(element);
+            else
+                currentDelta.insertMovedTo(element, movedFromElement);
+        }
+    }
+
+    private void translateRemovedDelta(IResourceDelta delta, IFooElement element)
+    {
+        if ((delta.getFlags() & IResourceDelta.MOVED_TO) == 0) // regular removal
+        {
+            currentDelta.insertRemoved(element);
+        }
+        else
+        {
+            IFooElement movedToElement =
+                FooModelCore.create(getResource(delta.getMovedToPath(),
+                    delta.getResource().getType()));
+            if (movedToElement == null)
+                currentDelta.insertRemoved(element);
+            else
+                currentDelta.insertMovedFrom(element, movedToElement);
+        }
+    }
+
     private void contentChanged(IFooFile fooFile)
     {
         close(fooFile);
+        currentDelta.insertChanged(fooFile, IHandleDelta.F_CONTENT);
     }
 
     private static Body findBody(IHandle element)
@@ -253,5 +333,27 @@ class FooDeltaProcessor
     private static void close(IHandle element)
     {
         ((Handle)element).close();
+    }
+
+    private static IResource getResource(IPath fullPath, int resourceType)
+    {
+        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+        switch (resourceType)
+        {
+        case IResource.ROOT:
+            return root;
+
+        case IResource.PROJECT:
+            return root.getProject(fullPath.lastSegment());
+
+        case IResource.FOLDER:
+            return root.getFolder(fullPath);
+
+        case IResource.FILE:
+            return root.getFile(fullPath);
+
+        default:
+            return null;
+        }
     }
 }

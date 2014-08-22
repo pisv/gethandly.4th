@@ -21,6 +21,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.handly.examples.basic.ui.model.IFooModel;
 import org.eclipse.handly.examples.basic.ui.model.IFooProject;
+import org.eclipse.handly.model.IElementChangeListener;
 import org.eclipse.handly.model.IHandle;
 import org.eclipse.handly.model.impl.Body;
 import org.eclipse.handly.model.impl.Handle;
@@ -45,6 +46,18 @@ public class FooModel
     }
 
     @Override
+    public void addElementChangeListener(IElementChangeListener listener)
+    {
+        FooModelManager.INSTANCE.addElementChangeListener(listener);
+    }
+
+    @Override
+    public void removeElementChangeListener(IElementChangeListener listener)
+    {
+        FooModelManager.INSTANCE.removeElementChangeListener(listener);
+    }
+
+    @Override
     public IFooProject getFooProject(String name)
     {
         return new FooProject(this, workspace.getRoot().getProject(name));
@@ -59,7 +72,7 @@ public class FooModel
         System.arraycopy(children, 0, result, 0, length);
         return result;
     }
-    
+
     @Override
     public IWorkspace getWorkspace()
     {

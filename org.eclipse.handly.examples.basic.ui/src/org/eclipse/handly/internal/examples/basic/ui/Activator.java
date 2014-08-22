@@ -14,6 +14,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.handly.examples.basic.ui.internal.FooActivator;
 import org.eclipse.handly.internal.examples.basic.ui.model.FooModelManager;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.swt.graphics.Image;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -25,6 +28,11 @@ public class Activator
     public static final String PLUGIN_ID =
         "org.eclipse.handly.examples.basic.ui"; //$NON-NLS-1$
 
+    public static final String T_OBJ16 = "/obj16/"; //$NON-NLS-1$
+
+    public static final String IMG_OBJ_DEF = PLUGIN_ID + T_OBJ16 + "def.gif"; //$NON-NLS-1$
+    public static final String IMG_OBJ_VAR = PLUGIN_ID + T_OBJ16 + "var.gif"; //$NON-NLS-1$
+
     public static void log(IStatus status)
     {
         getInstance().getLog().log(status);
@@ -33,6 +41,16 @@ public class Activator
     public static IStatus createErrorStatus(String msg, Throwable e)
     {
         return new Status(IStatus.ERROR, PLUGIN_ID, 0, msg, e);
+    }
+
+    public static Image getImage(String symbolicName)
+    {
+        return getInstance().getImageRegistry().get(symbolicName);
+    }
+
+    public static ImageDescriptor getImageDescriptor(String symbolicName)
+    {
+        return getInstance().getImageRegistry().getDescriptor(symbolicName);
     }
 
     @Override
@@ -53,5 +71,19 @@ public class Activator
         {
             super.stop(bundleContext);
         }
+    }
+
+    @Override
+    protected void initializeImageRegistry(ImageRegistry reg)
+    {
+        reg.put(IMG_OBJ_DEF, imageDescriptorFromSymbolicName(IMG_OBJ_DEF));
+        reg.put(IMG_OBJ_VAR, imageDescriptorFromSymbolicName(IMG_OBJ_VAR));
+    }
+
+    private static ImageDescriptor imageDescriptorFromSymbolicName(
+        String symbolicName)
+    {
+        String path = "/icons/" + symbolicName.substring(PLUGIN_ID.length()); //$NON-NLS-1$
+        return imageDescriptorFromPlugin(PLUGIN_ID, path);
     }
 }

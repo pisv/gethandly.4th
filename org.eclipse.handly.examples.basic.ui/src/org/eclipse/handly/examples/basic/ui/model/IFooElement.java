@@ -10,12 +10,14 @@
  *******************************************************************************/
 package org.eclipse.handly.examples.basic.ui.model;
 
-import org.eclipse.handly.model.ISourceConstruct;
+import org.eclipse.handly.model.IHandle;
 
 /**
- * Represents a variable declared in a Foo file.
+ * Common protocol for all elements provided by the Foo Model. 
+ * The Foo Model represents the workspace from the Foo-centric view. 
+ * It is a handle-based model - its elements are {@link IHandle}s.
  */
-public interface IFooVar
-    extends ISourceConstruct, IFooElement
+public interface IFooElement
+    extends IHandle
 {
 }

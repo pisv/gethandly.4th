@@ -13,6 +13,7 @@ package org.eclipse.handly.examples.basic.ui.model;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.handly.model.IElementChangeListener;
 import org.eclipse.handly.model.IHandle;
 
 /**
@@ -21,8 +22,30 @@ import org.eclipse.handly.model.IHandle;
  * as <em>the</em> Foo Model element.
  */
 public interface IFooModel
-    extends IHandle
+    extends IHandle, IFooElement
 {
+    /**
+     * Adds the given listener for changes to elements in the Foo Model. 
+     * Has no effect if an identical listener is already registered. 
+     * <p>
+     * Once registered, a listener starts receiving notification of changes to
+     * elements in the Foo Model. The listener continues to receive notifications 
+     * until it is removed.
+     * </p>
+     *
+     * @param listener the listener (not <code>null</code>)
+     * @see #removeElementChangeListener(IElementChangeListener)
+     */
+    void addElementChangeListener(IElementChangeListener listener);
+
+    /**
+     * Removes the given element change listener.
+     * Has no effect if an identical listener is not registered.
+     *
+     * @param listener the listener (not <code>null</code>)
+     */
+    void removeElementChangeListener(IElementChangeListener listener);
+
     /**
      * Returns the Foo project with the given name. The given name must be 
      * a valid path segment as defined by {@link IPath#isValidSegment(String)}. 
