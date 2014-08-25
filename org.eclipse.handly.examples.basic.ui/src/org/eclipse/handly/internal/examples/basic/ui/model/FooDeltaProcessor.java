@@ -321,6 +321,13 @@ class FooDeltaProcessor
 
     private void contentChanged(IFooFile fooFile)
     {
+        if (fooFile.isWorkingCopy())
+        {
+            currentDelta.insertChanged(fooFile, IHandleDelta.F_CONTENT
+                | IHandleDelta.F_UNDERLYING_RESOURCE);
+            return;
+        }
+
         close(fooFile);
         currentDelta.insertChanged(fooFile, IHandleDelta.F_CONTENT);
     }

@@ -27,9 +27,13 @@ import org.eclipse.handly.examples.basic.ui.model.IFooVar;
 import org.eclipse.handly.internal.examples.basic.ui.Activator;
 import org.eclipse.handly.model.IHandle;
 import org.eclipse.handly.model.impl.Body;
+import org.eclipse.handly.model.impl.ElementChangeEvent;
+import org.eclipse.handly.model.impl.HandleDelta;
+import org.eclipse.handly.model.impl.HandleDeltaBuilder;
 import org.eclipse.handly.model.impl.HandleManager;
 import org.eclipse.handly.model.impl.SourceElementBody;
 import org.eclipse.handly.model.impl.SourceFile;
+import org.eclipse.handly.snapshot.NonExpiringSnapshot;
 import org.eclipse.xtext.parser.IParseResult;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.XtextResource;
@@ -82,6 +86,12 @@ public class FooFile
     public IFooDef[] getDefs() throws CoreException
     {
         return getChildren(IFooDef.class);
+    }
+
+    @Override
+    public ReconcileOperation getReconcileOperation()
+    {
+        return new NotifyingReconcileOperation();
     }
 
     @Override
@@ -186,5 +196,42 @@ public class FooFile
     protected HandleManager getHandleManager()
     {
         return FooModelManager.INSTANCE.getHandleManager();
+    }
+
+    @Override
+    protected void workingCopyModeChanged()
+    {
+        super.workingCopyModeChanged();
+
+        HandleDelta delta = new HandleDelta(getRoot());
+        if (file.exists())
+            delta.insertChanged(this, HandleDelta.F_WORKING_COPY);
+        else if (isWorkingCopy())
+            delta.insertAdded(this, HandleDelta.F_WORKING_COPY);
+        else
+            delta.insertRemoved(this, HandleDelta.F_WORKING_COPY);
+        FooModelManager.INSTANCE.fireElementChangeEvent(new ElementChangeEvent(
+            ElementChangeEvent.POST_CHANGE, delta));
+    }
+
+    private class NotifyingReconcileOperation
+        extends ReconcileOperation
+    {
+        @Override
+        public void reconcile(Object ast, NonExpiringSnapshot snapshot,
+            boolean forced) throws CoreException
+        {
+            HandleDeltaBuilder deltaBuilder =
+                new HandleDeltaBuilder(FooFile.this);
+
+            super.reconcile(ast, snapshot, forced);
+
+            deltaBuilder.buildDelta();
+            if (!deltaBuilder.getDelta().isEmpty())
+            {
+                FooModelManager.INSTANCE.fireElementChangeEvent(new ElementChangeEvent(
+                    ElementChangeEvent.POST_RECONCILE, deltaBuilder.getDelta()));
+            }
+        }
     }
 }

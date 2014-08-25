@@ -11,7 +11,22 @@
 package org.eclipse.handly.examples.basic.ui;
 
 import org.eclipse.handly.examples.basic.ui.internal.FooActivator;
+import org.eclipse.handly.internal.examples.basic.ui.model.FooFileFactory;
+import org.eclipse.handly.internal.examples.basic.ui.outline.FooOutlinePage;
+import org.eclipse.handly.model.ISourceFileFactory;
+import org.eclipse.handly.xtext.ui.editor.HandlyDirtyStateEditorSupport;
+import org.eclipse.handly.xtext.ui.editor.HandlyXtextDocument;
+import org.eclipse.handly.xtext.ui.editor.HandlyXtextEditorCallback;
+import org.eclipse.handly.xtext.ui.editor.HandlyXtextReconciler;
+import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
+import org.eclipse.xtext.ui.editor.DirtyStateEditorSupport;
+import org.eclipse.xtext.ui.editor.IXtextEditorCallback;
+import org.eclipse.xtext.ui.editor.model.XtextDocument;
+
+import com.google.inject.Binder;
+import com.google.inject.name.Names;
 
 /**
  * Use this class to register components to be used within the IDE.
@@ -25,5 +40,39 @@ public class FooUiModule
     public FooUiModule(AbstractUIPlugin plugin)
     {
         super(plugin);
+    }
+
+    @Override
+    public Class<? extends IContentOutlinePage> bindIContentOutlinePage()
+    {
+        return FooOutlinePage.class;
+    }
+
+    @Override
+    public Class<? extends IReconciler> bindIReconciler()
+    {
+        return HandlyXtextReconciler.class;
+    }
+
+    public Class<? extends XtextDocument> bindXtextDocument()
+    {
+        return HandlyXtextDocument.class;
+    }
+
+    public Class<? extends DirtyStateEditorSupport> bindDirtyStateEditorSupport()
+    {
+        return HandlyDirtyStateEditorSupport.class;
+    }
+
+    public void configureXtextEditorCallback(Binder binder)
+    {
+        binder.bind(IXtextEditorCallback.class).annotatedWith(
+            Names.named(HandlyXtextEditorCallback.class.getName())).to(
+            HandlyXtextEditorCallback.class);
+    }
+
+    public Class<? extends ISourceFileFactory> bindISourceFileFactory()
+    {
+        return FooFileFactory.class;
     }
 }
