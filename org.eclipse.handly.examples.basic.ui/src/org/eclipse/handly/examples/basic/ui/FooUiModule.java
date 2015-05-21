@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,9 +11,9 @@
 package org.eclipse.handly.examples.basic.ui;
 
 import org.eclipse.handly.examples.basic.ui.internal.FooActivator;
-import org.eclipse.handly.internal.examples.basic.ui.model.FooFileFactory;
+import org.eclipse.handly.internal.examples.basic.ui.FooElementForEditorInputFactory;
 import org.eclipse.handly.internal.examples.basic.ui.outline.FooOutlinePage;
-import org.eclipse.handly.model.ISourceFileFactory;
+import org.eclipse.handly.ui.IElementForEditorInputFactory;
 import org.eclipse.handly.xtext.ui.editor.HandlyDirtyStateEditorSupport;
 import org.eclipse.handly.xtext.ui.editor.HandlyXtextDocument;
 import org.eclipse.handly.xtext.ui.editor.HandlyXtextEditorCallback;
@@ -71,8 +71,8 @@ public class FooUiModule
             HandlyXtextEditorCallback.class);
     }
 
-    public Class<? extends ISourceFileFactory> bindISourceFileFactory()
+    public Class<? extends IElementForEditorInputFactory> bindIElementForEditorInputFactory()
     {
-        return FooFileFactory.class;
+        return FooElementForEditorInputFactory.class;
     }
 }

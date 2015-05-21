@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,7 +20,6 @@ import org.eclipse.handly.model.IElementChangeListener;
 import org.eclipse.handly.model.IHandle;
 import org.eclipse.handly.model.IHandleDelta;
 import org.eclipse.handly.model.ISourceElement;
-import org.eclipse.handly.model.ISourceFile;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.IPostSelectionProvider;
 import org.eclipse.jface.viewers.ISelection;
@@ -259,10 +258,8 @@ public class FooOutlinePage
             Object input = getTreeViewer().getInput();
             if (!(input instanceof ISourceElement))
                 return null;
-            ISourceFile sourceFile = ((ISourceElement)input).getSourceFile();
-            ISourceElement element =
-                SourceElementUtil.getSourceElement(sourceFile,
-                    selection.getOffset());
+            ISourceElement element = SourceElementUtil.getElementAt(
+                (ISourceElement)input, selection.getOffset());
             if (element == null)
                 return null;
             return new StructuredSelection(element);
