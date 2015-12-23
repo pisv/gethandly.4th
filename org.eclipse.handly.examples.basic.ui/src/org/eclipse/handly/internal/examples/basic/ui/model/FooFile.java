@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,7 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -96,7 +97,8 @@ public class FooFile
 
     @Override
     protected void buildStructure(SourceElementBody body,
-        Map<IHandle, Body> newElements, Object ast, String source)
+        Map<IHandle, Body> newElements, Object ast, String source,
+        IProgressMonitor monitor)
     {
         XtextResource resource = (XtextResource)ast;
         IParseResult parseResult = resource.getParseResult();
@@ -105,9 +107,8 @@ public class FooFile
             EObject root = parseResult.getRootASTElement();
             if (root instanceof Module)
             {
-                FooFileStructureBuilder builder =
-                    new FooFileStructureBuilder(newElements,
-                        resource.getResourceServiceProvider());
+                FooFileStructureBuilder builder = new FooFileStructureBuilder(
+                    newElements, resource.getResourceServiceProvider());
                 builder.buildStructure(this, body, (Module)root);
             }
         }
@@ -124,7 +125,8 @@ public class FooFile
      * @throws CoreException if resource loading failed
      */
     @Override
-    protected Object createStructuralAst(String source) throws CoreException
+    protected Object createStructuralAst(String source,
+        IProgressMonitor monitor) throws CoreException
     {
         try
         {
@@ -156,10 +158,10 @@ public class FooFile
     {
         IResourceSetProvider resourceSetProvider =
             getResourceServiceProvider().get(IResourceSetProvider.class);
-        ResourceSet resourceSet =
-            resourceSetProvider.get(getFile().getProject());
-        XtextResource resource =
-            (XtextResource)resourceSet.createResource(getResourceUri());
+        ResourceSet resourceSet = resourceSetProvider.get(
+            getFile().getProject());
+        XtextResource resource = (XtextResource)resourceSet.createResource(
+            getResourceUri());
         resource.load(new ByteArrayInputStream(contents.getBytes(encoding)),
             Collections.singletonMap(XtextResource.OPTION_ENCODING, encoding));
         return resource;
@@ -175,7 +177,8 @@ public class FooFile
     protected IResourceServiceProvider getResourceServiceProvider()
     {
         IResourceServiceProvider provider =
-            IResourceServiceProvider.Registry.INSTANCE.getResourceServiceProvider(getResourceUri());
+            IResourceServiceProvider.Registry.INSTANCE.getResourceServiceProvider(
+                getResourceUri());
         if (provider == null)
             throw new AssertionError();
         return provider;
@@ -219,12 +222,12 @@ public class FooFile
     {
         @Override
         public void reconcile(Object ast, NonExpiringSnapshot snapshot,
-            boolean forced) throws CoreException
+            boolean forced, IProgressMonitor monitor) throws CoreException
         {
             HandleDeltaBuilder deltaBuilder =
                 new HandleDeltaBuilder(FooFile.this);
 
-            super.reconcile(ast, snapshot, forced);
+            super.reconcile(ast, snapshot, forced, monitor);
 
             deltaBuilder.buildDelta();
             if (!deltaBuilder.getDelta().isEmpty())

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.handly.examples.basic.ui.model.IFooModel;
 import org.eclipse.handly.examples.basic.ui.model.IFooProject;
 import org.eclipse.handly.model.IElementChangeListener;
@@ -98,12 +99,12 @@ public class FooModel
     }
 
     @Override
-    protected void buildStructure(Body body, Map<IHandle, Body> newElements)
-        throws CoreException
+    protected void buildStructure(Body body, Map<IHandle, Body> newElements,
+        IProgressMonitor monitor) throws CoreException
     {
         IProject[] projects = workspace.getRoot().getProjects();
-        List<IFooProject> fooProjects =
-            new ArrayList<IFooProject>(projects.length);
+        List<IFooProject> fooProjects = new ArrayList<IFooProject>(
+            projects.length);
         for (IProject project : projects)
         {
             if (project.isOpen() && project.hasNature(IFooProject.NATURE_ID))

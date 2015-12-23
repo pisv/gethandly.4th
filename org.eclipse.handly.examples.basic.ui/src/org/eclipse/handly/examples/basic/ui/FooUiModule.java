@@ -11,9 +11,9 @@
 package org.eclipse.handly.examples.basic.ui;
 
 import org.eclipse.handly.examples.basic.ui.internal.FooActivator;
-import org.eclipse.handly.internal.examples.basic.ui.FooElementForEditorInputFactory;
+import org.eclipse.handly.internal.examples.basic.ui.FooInputElementProvider;
 import org.eclipse.handly.internal.examples.basic.ui.outline.FooOutlinePage;
-import org.eclipse.handly.ui.IElementForEditorInputFactory;
+import org.eclipse.handly.ui.IInputElementProvider;
 import org.eclipse.handly.xtext.ui.editor.HandlyDirtyStateEditorSupport;
 import org.eclipse.handly.xtext.ui.editor.HandlyXtextDocument;
 import org.eclipse.handly.xtext.ui.editor.HandlyXtextEditorCallback;
@@ -42,11 +42,18 @@ public class FooUiModule
         super(plugin);
     }
 
+    public Class<? extends IInputElementProvider> bindIInputElementProvider()
+    {
+        return FooInputElementProvider.class;
+    }
+
     @Override
     public Class<? extends IContentOutlinePage> bindIContentOutlinePage()
     {
         return FooOutlinePage.class;
     }
+
+ // the following bindings are required for Handly/Xtext integration:
 
     @Override
     public Class<? extends IReconciler> bindIReconciler()
@@ -69,10 +76,5 @@ public class FooUiModule
         binder.bind(IXtextEditorCallback.class).annotatedWith(
             Names.named(HandlyXtextEditorCallback.class.getName())).to(
             HandlyXtextEditorCallback.class);
-    }
-
-    public Class<? extends IElementForEditorInputFactory> bindIElementForEditorInputFactory()
-    {
-        return FooElementForEditorInputFactory.class;
     }
 }

@@ -14,12 +14,13 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.handly.examples.basic.ui.model.FooModelCore;
 import org.eclipse.handly.internal.examples.basic.ui.FooContentProvider;
 import org.eclipse.handly.internal.examples.basic.ui.FooLabelProvider;
-import org.eclipse.handly.internal.examples.basic.ui.SourceElementUtil;
 import org.eclipse.handly.model.IElementChangeEvent;
 import org.eclipse.handly.model.IElementChangeListener;
 import org.eclipse.handly.model.IHandle;
 import org.eclipse.handly.model.IHandleDelta;
 import org.eclipse.handly.model.ISourceElement;
+import org.eclipse.handly.model.SourceElements;
+import org.eclipse.handly.util.TextRange;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.IPostSelectionProvider;
 import org.eclipse.jface.viewers.ISelection;
@@ -182,7 +183,8 @@ public class FooOutlinePage
             ISelectionProvider selectionProvider =
                 editor.getSite().getSelectionProvider();
             if (selectionProvider instanceof IPostSelectionProvider)
-                ((IPostSelectionProvider)selectionProvider).addPostSelectionChangedListener(editorListener);
+                ((IPostSelectionProvider)selectionProvider).addPostSelectionChangedListener(
+                    editorListener);
             else
                 selectionProvider.addSelectionChangedListener(editorListener);
         }
@@ -193,9 +195,11 @@ public class FooOutlinePage
             ISelectionProvider selectionProvider =
                 editor.getSite().getSelectionProvider();
             if (selectionProvider instanceof IPostSelectionProvider)
-                ((IPostSelectionProvider)selectionProvider).removePostSelectionChangedListener(editorListener);
+                ((IPostSelectionProvider)selectionProvider).removePostSelectionChangedListener(
+                    editorListener);
             else
-                selectionProvider.removeSelectionChangedListener(editorListener);
+                selectionProvider.removeSelectionChangedListener(
+                    editorListener);
             super.dispose();
         }
 
@@ -204,7 +208,8 @@ public class FooOutlinePage
         {
             super.setLinkWithEditor(enabled);
             if (enabled)
-                linkToOutline(editor.getSite().getSelectionProvider().getSelection());
+                linkToOutline(
+                    editor.getSite().getSelectionProvider().getSelection());
         }
 
         @Override
@@ -228,8 +233,12 @@ public class FooOutlinePage
                 ((IStructuredSelection)selection).getFirstElement();
             if (!(element instanceof ISourceElement))
                 return;
-            SourceElementUtil.revealInTextEditor(editor,
-                (ISourceElement)element);
+            TextRange identifyingRange = SourceElements.getSourceElementInfo(
+                (ISourceElement)element).getIdentifyingRange();
+            if (identifyingRange == null)
+                return;
+            editor.selectAndReveal(identifyingRange.getOffset(),
+                identifyingRange.getLength());
         }
 
         @SuppressWarnings("unchecked")
@@ -253,13 +262,14 @@ public class FooOutlinePage
             }
         }
 
-        private IStructuredSelection getLinkedSelection(ITextSelection selection)
+        private IStructuredSelection getLinkedSelection(
+            ITextSelection selection)
         {
             Object input = getTreeViewer().getInput();
             if (!(input instanceof ISourceElement))
                 return null;
-            ISourceElement element = SourceElementUtil.getElementAt(
-                (ISourceElement)input, selection.getOffset());
+            ISourceElement element = SourceElements.getElementAt(
+                (ISourceElement)input, selection.getOffset(), null);
             if (element == null)
                 return null;
             return new StructuredSelection(element);

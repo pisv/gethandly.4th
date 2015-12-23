@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2015 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,7 @@
 package org.eclipse.handly.internal.examples.basic.ui.model;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.handly.examples.basic.ui.model.IFooFile;
 import org.eclipse.handly.examples.basic.ui.model.IFooModel;
@@ -82,6 +83,15 @@ class FooModelCache
             fileCache.put(handle, body);
         else
             childrenCache.put(handle, body);
+    }
+
+    @Override
+    public void putAll(Map<IHandle, Body> elements)
+    {
+        for (Map.Entry<IHandle, Body> entry : elements.entrySet())
+        {
+            put(entry.getKey(), entry.getValue());
+        }
     }
 
     @Override
