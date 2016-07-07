@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 1C-Soft LLC and others.
+ * Copyright (c) 2014, 2016 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,16 +23,16 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.handly.examples.basic.ui.model.IFooModel;
 import org.eclipse.handly.examples.basic.ui.model.IFooProject;
 import org.eclipse.handly.model.IElementChangeListener;
-import org.eclipse.handly.model.IHandle;
+import org.eclipse.handly.model.IElement;
 import org.eclipse.handly.model.impl.Body;
-import org.eclipse.handly.model.impl.Handle;
-import org.eclipse.handly.model.impl.HandleManager;
+import org.eclipse.handly.model.impl.Element;
+import org.eclipse.handly.model.impl.ElementManager;
 
 /**
  * Represents the root Foo element corresponding to the workspace. 
  */
 public class FooModel
-    extends Handle
+    extends Element
     implements IFooModel
 {
     private final IWorkspace workspace;
@@ -67,7 +67,7 @@ public class FooModel
     @Override
     public IFooProject[] getFooProjects() throws CoreException
     {
-        IHandle[] children = getChildren();
+        IElement[] children = getChildren();
         int length = children.length;
         IFooProject[] result = new IFooProject[length];
         System.arraycopy(children, 0, result, 0, length);
@@ -81,30 +81,30 @@ public class FooModel
     }
 
     @Override
-    public IResource getResource()
+    public IResource hResource()
     {
         return workspace.getRoot();
     }
 
     @Override
-    protected HandleManager getHandleManager()
+    protected ElementManager hElementManager()
     {
-        return FooModelManager.INSTANCE.getHandleManager();
+        return FooModelManager.INSTANCE.getElementManager();
     }
 
     @Override
-    protected void validateExistence()
+    protected void hValidateExistence()
     {
         // always exists
     }
 
     @Override
-    protected void buildStructure(Body body, Map<IHandle, Body> newElements,
-        IProgressMonitor monitor) throws CoreException
+    protected void hBuildStructure(Object body,
+        Map<IElement, Object> newElements, IProgressMonitor monitor)
+        throws CoreException
     {
         IProject[] projects = workspace.getRoot().getProjects();
-        List<IFooProject> fooProjects = new ArrayList<IFooProject>(
-            projects.length);
+        List<IFooProject> fooProjects = new ArrayList<>(projects.length);
         for (IProject project : projects)
         {
             if (project.isOpen() && project.hasNature(IFooProject.NATURE_ID))
@@ -112,6 +112,6 @@ public class FooModel
                 fooProjects.add(new FooProject(this, project));
             }
         }
-        body.setChildren(fooProjects.toArray(new IHandle[fooProjects.size()]));
+        ((Body)body).setChildren(fooProjects.toArray(Body.NO_CHILDREN));
     }
 }

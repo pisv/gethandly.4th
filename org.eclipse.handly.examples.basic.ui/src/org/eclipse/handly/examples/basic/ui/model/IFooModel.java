@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2016 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,7 +14,6 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.handly.model.IElementChangeListener;
-import org.eclipse.handly.model.IHandle;
 
 /**
  * Represents the root Foo element corresponding to the workspace. 
@@ -22,7 +21,7 @@ import org.eclipse.handly.model.IHandle;
  * as <em>the</em> Foo Model element.
  */
 public interface IFooModel
-    extends IHandle, IFooElement
+    extends IFooElement
 {
     /**
      * Adds the given listener for changes to elements in the Foo Model. 

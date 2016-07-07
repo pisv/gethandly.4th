@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 1C-Soft LLC and others.
+ * Copyright (c) 2014, 2016 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,12 +26,12 @@ import org.eclipse.handly.examples.basic.ui.model.IFooDef;
 import org.eclipse.handly.examples.basic.ui.model.IFooFile;
 import org.eclipse.handly.examples.basic.ui.model.IFooVar;
 import org.eclipse.handly.internal.examples.basic.ui.Activator;
-import org.eclipse.handly.model.IHandle;
-import org.eclipse.handly.model.impl.Body;
+import org.eclipse.handly.model.IElement;
+import org.eclipse.handly.model.IElementDeltaConstants;
 import org.eclipse.handly.model.impl.ElementChangeEvent;
-import org.eclipse.handly.model.impl.HandleDelta;
-import org.eclipse.handly.model.impl.HandleDeltaBuilder;
-import org.eclipse.handly.model.impl.HandleManager;
+import org.eclipse.handly.model.impl.ElementDelta;
+import org.eclipse.handly.model.impl.ElementDifferencer;
+import org.eclipse.handly.model.impl.ElementManager;
 import org.eclipse.handly.model.impl.SourceElementBody;
 import org.eclipse.handly.model.impl.SourceFile;
 import org.eclipse.handly.snapshot.NonExpiringSnapshot;
@@ -90,14 +90,13 @@ public class FooFile
     }
 
     @Override
-    public ReconcileOperation getReconcileOperation()
+    public ReconcileOperation hReconcileOperation()
     {
         return new NotifyingReconcileOperation();
     }
 
-    @Override
-    protected void buildStructure(SourceElementBody body,
-        Map<IHandle, Body> newElements, Object ast, String source,
+    protected void hBuildStructure(SourceElementBody body,
+        Map<IElement, Object> newElements, Object ast, String source,
         IProgressMonitor monitor)
     {
         XtextResource resource = (XtextResource)ast;
@@ -125,7 +124,7 @@ public class FooFile
      * @throws CoreException if resource loading failed
      */
     @Override
-    protected Object createStructuralAst(String source,
+    protected Object hCreateStructuralAst(String source,
         IProgressMonitor monitor) throws CoreException
     {
         try
@@ -196,25 +195,26 @@ public class FooFile
     }
 
     @Override
-    protected HandleManager getHandleManager()
+    protected ElementManager hElementManager()
     {
-        return FooModelManager.INSTANCE.getHandleManager();
+        return FooModelManager.INSTANCE.getElementManager();
     }
 
     @Override
-    protected void workingCopyModeChanged()
+    protected void hWorkingCopyModeChanged()
     {
-        super.workingCopyModeChanged();
+        super.hWorkingCopyModeChanged();
 
-        HandleDelta delta = new HandleDelta(getRoot());
-        if (file.exists())
-            delta.insertChanged(this, HandleDelta.F_WORKING_COPY);
+        ElementDelta.Builder builder = new ElementDelta.Builder(
+            new ElementDelta(getRoot()));
+        if (getFile().exists())
+            builder.changed(this, IElementDeltaConstants.F_WORKING_COPY);
         else if (isWorkingCopy())
-            delta.insertAdded(this, HandleDelta.F_WORKING_COPY);
+            builder.added(this, IElementDeltaConstants.F_WORKING_COPY);
         else
-            delta.insertRemoved(this, HandleDelta.F_WORKING_COPY);
+            builder.removed(this, IElementDeltaConstants.F_WORKING_COPY);
         FooModelManager.INSTANCE.fireElementChangeEvent(new ElementChangeEvent(
-            ElementChangeEvent.POST_CHANGE, delta));
+            ElementChangeEvent.POST_CHANGE, builder.getDelta()));
     }
 
     private class NotifyingReconcileOperation
@@ -224,16 +224,17 @@ public class FooFile
         public void reconcile(Object ast, NonExpiringSnapshot snapshot,
             boolean forced, IProgressMonitor monitor) throws CoreException
         {
-            HandleDeltaBuilder deltaBuilder =
-                new HandleDeltaBuilder(FooFile.this);
+            ElementDifferencer differ = new ElementDifferencer(
+                new ElementDelta.Builder(new ElementDelta(FooFile.this)));
 
             super.reconcile(ast, snapshot, forced, monitor);
 
-            deltaBuilder.buildDelta();
-            if (!deltaBuilder.getDelta().isEmpty())
+            differ.buildDelta();
+            if (!differ.isEmptyDelta())
             {
-                FooModelManager.INSTANCE.fireElementChangeEvent(new ElementChangeEvent(
-                    ElementChangeEvent.POST_RECONCILE, deltaBuilder.getDelta()));
+                FooModelManager.INSTANCE.fireElementChangeEvent(
+                    new ElementChangeEvent(ElementChangeEvent.POST_RECONCILE,
+                        differ.getDelta()));
             }
         }
     }

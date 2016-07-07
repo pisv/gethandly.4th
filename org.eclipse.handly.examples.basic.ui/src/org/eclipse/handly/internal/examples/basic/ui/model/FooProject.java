@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 1C-Soft LLC and others.
+ * Copyright (c) 2014, 2016 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,16 +23,16 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.handly.examples.basic.ui.model.IFooFile;
 import org.eclipse.handly.examples.basic.ui.model.IFooProject;
 import org.eclipse.handly.internal.examples.basic.ui.Activator;
-import org.eclipse.handly.model.IHandle;
+import org.eclipse.handly.model.IElement;
 import org.eclipse.handly.model.impl.Body;
-import org.eclipse.handly.model.impl.Handle;
-import org.eclipse.handly.model.impl.HandleManager;
+import org.eclipse.handly.model.impl.Element;
+import org.eclipse.handly.model.impl.ElementManager;
 
 /**
  * Represents a Foo project.
  */
 public class FooProject
-    extends Handle
+    extends Element
     implements IFooProject
 {
     private final IProject project;
@@ -68,7 +68,7 @@ public class FooProject
     @Override
     public IFooFile[] getFooFiles() throws CoreException
     {
-        IHandle[] children = getChildren();
+        IElement[] children = getChildren();
         int length = children.length;
         IFooFile[] result = new IFooFile[length];
         System.arraycopy(children, 0, result, 0, length);
@@ -82,44 +82,45 @@ public class FooProject
     }
 
     @Override
-    public IResource getResource()
+    public IResource hResource()
     {
         return project;
     }
 
     @Override
-    protected HandleManager getHandleManager()
+    protected ElementManager hElementManager()
     {
-        return FooModelManager.INSTANCE.getHandleManager();
+        return FooModelManager.INSTANCE.getElementManager();
     }
 
     @Override
-    protected void validateExistence() throws CoreException
+    protected void hValidateExistence() throws CoreException
     {
         if (!project.exists())
             throw new CoreException(Activator.createErrorStatus(
                 MessageFormat.format(
-                    "Project ''{0}'' does not exist in workspace", name),
+                    "Project ''{0}'' does not exist in workspace", getName()),
                 null));
 
         if (!project.isOpen())
             throw new CoreException(Activator.createErrorStatus(
-                MessageFormat.format("Project ''{0}'' is not open", name),
+                MessageFormat.format("Project ''{0}'' is not open", getName()),
                 null));
 
         if (!project.hasNature(NATURE_ID))
             throw new CoreException(Activator.createErrorStatus(
                 MessageFormat.format(
-                    "Project ''{0}'' does not have the Foo nature", name),
+                    "Project ''{0}'' does not have the Foo nature", getName()),
                 null));
     }
 
     @Override
-    protected void buildStructure(Body body, Map<IHandle, Body> newElements,
-        IProgressMonitor monitor) throws CoreException
+    protected void hBuildStructure(Object body,
+        Map<IElement, Object> newElements, IProgressMonitor monitor)
+        throws CoreException
     {
         IResource[] members = project.members();
-        List<IFooFile> fooFiles = new ArrayList<IFooFile>(members.length);
+        List<IFooFile> fooFiles = new ArrayList<>(members.length);
         for (IResource member : members)
         {
             if (member instanceof IFile)
@@ -133,6 +134,6 @@ public class FooProject
                 }
             }
         }
-        body.setChildren(fooFiles.toArray(new IHandle[fooFiles.size()]));
+        ((Body)body).setChildren(fooFiles.toArray(Body.NO_CHILDREN));
     }
 }

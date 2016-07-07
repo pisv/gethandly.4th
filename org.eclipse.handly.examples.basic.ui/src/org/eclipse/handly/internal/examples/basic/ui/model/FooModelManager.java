@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 1C LLC.
+ * Copyright (c) 2014, 2016 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,7 +21,7 @@ import org.eclipse.handly.internal.examples.basic.ui.Activator;
 import org.eclipse.handly.model.IElementChangeEvent;
 import org.eclipse.handly.model.IElementChangeListener;
 import org.eclipse.handly.model.impl.ElementChangeEvent;
-import org.eclipse.handly.model.impl.HandleManager;
+import org.eclipse.handly.model.impl.ElementManager;
 
 /**
  * The manager for the Foo Model. 
@@ -37,14 +37,14 @@ public class FooModelManager
     public static final FooModelManager INSTANCE = new FooModelManager();
 
     private IFooModel fooModel;
-    private HandleManager handleManager;
-    private ListenerList listenerList;
+    private ElementManager elementManager;
+    private ListenerList<IElementChangeListener> listeners;
 
     public void startup() throws Exception
     {
         fooModel = new FooModel();
-        handleManager = new HandleManager(new FooModelCache());
-        listenerList = new ListenerList();
+        elementManager = new ElementManager(new FooModelCache());
+        listeners = new ListenerList<>();
         fooModel.getWorkspace().addResourceChangeListener(this,
             IResourceChangeEvent.POST_CHANGE);
     }
@@ -52,8 +52,8 @@ public class FooModelManager
     public void shutdown() throws Exception
     {
         fooModel.getWorkspace().removeResourceChangeListener(this);
-        listenerList = null;
-        handleManager = null;
+        listeners = null;
+        elementManager = null;
         fooModel = null;
     }
 
@@ -71,7 +71,7 @@ public class FooModelManager
         {
             Activator.log(e.getStatus());
         }
-        if (!deltaProcessor.getDelta().isEmpty())
+        if (!deltaProcessor.isEmptyDelta())
         {
             fireElementChangeEvent(new ElementChangeEvent(
                 ElementChangeEvent.POST_CHANGE, deltaProcessor.getDelta()));
@@ -85,33 +85,32 @@ public class FooModelManager
         return fooModel;
     }
 
-    public HandleManager getHandleManager()
+    public ElementManager getElementManager()
     {
-        if (handleManager == null)
+        if (elementManager == null)
             throw new IllegalStateException();
-        return handleManager;
+        return elementManager;
     }
 
     public void addElementChangeListener(IElementChangeListener listener)
     {
-        if (listenerList == null)
+        if (listeners == null)
             throw new IllegalStateException();
-        listenerList.add(listener);
+        listeners.add(listener);
     }
 
     public void removeElementChangeListener(IElementChangeListener listener)
     {
-        if (listenerList == null)
+        if (listeners == null)
             throw new IllegalStateException();
-        listenerList.remove(listener);
+        listeners.remove(listener);
     }
 
     public void fireElementChangeEvent(final IElementChangeEvent event)
     {
-        if (listenerList == null)
+        if (listeners == null)
             throw new IllegalStateException();
-        Object[] listeners = listenerList.getListeners();
-        for (final Object listener : listeners)
+        for (IElementChangeListener listener : listeners)
         {
             SafeRunner.run(new ISafeRunnable()
             {
@@ -122,7 +121,7 @@ public class FooModelManager
 
                 public void run() throws Exception
                 {
-                    ((IElementChangeListener)listener).elementChanged(event);
+                    listener.elementChanged(event);
                 }
             });
         }
