@@ -13,7 +13,7 @@ package org.eclipse.handly.examples.basic.ui.model;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.handly.model.ISourceConstruct;
 import org.eclipse.handly.model.ISourceElementExtension;
-import org.eclipse.handly.model.Property;
+import org.eclipse.handly.util.Property;
 
 /**
  * Represents a function defined in a Foo file.
@@ -25,8 +25,8 @@ public interface IFooDef
      * Parameter names property.
      * @see #getParameterNames()
      */
-    Property<String[]> PARAMETER_NAMES = new Property<String[]>(
-        "parameterNames");
+    Property<String[]> PARAMETER_NAMES = Property.get("parameterNames",
+        String[].class);
 
     @Override
     default IFooFile getParent()

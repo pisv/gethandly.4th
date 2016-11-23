@@ -21,20 +21,15 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.examples.basic.foo.Module;
 import org.eclipse.handly.examples.basic.ui.model.IFooDef;
 import org.eclipse.handly.examples.basic.ui.model.IFooFile;
 import org.eclipse.handly.examples.basic.ui.model.IFooVar;
 import org.eclipse.handly.internal.examples.basic.ui.Activator;
 import org.eclipse.handly.model.IElement;
-import org.eclipse.handly.model.IElementDeltaConstants;
-import org.eclipse.handly.model.impl.ElementChangeEvent;
-import org.eclipse.handly.model.impl.ElementDelta;
-import org.eclipse.handly.model.impl.ElementDifferencer;
-import org.eclipse.handly.model.impl.ElementManager;
 import org.eclipse.handly.model.impl.SourceElementBody;
-import org.eclipse.handly.model.impl.SourceFile;
-import org.eclipse.handly.snapshot.NonExpiringSnapshot;
+import org.eclipse.handly.model.impl.WorkspaceSourceFile;
 import org.eclipse.xtext.parser.IParseResult;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.XtextResource;
@@ -44,8 +39,8 @@ import org.eclipse.xtext.ui.resource.IResourceSetProvider;
  * Represents a Foo source file.
  */
 public class FooFile
-    extends SourceFile
-    implements IFooFile
+    extends WorkspaceSourceFile
+    implements IFooFile, IFooElementInternal
 {
     /**
      * Constructs a handle for a Foo file with the given parent element 
@@ -89,17 +84,27 @@ public class FooFile
         return getChildren(IFooDef.class);
     }
 
-    @Override
-    public ReconcileOperation hReconcileOperation()
+    protected void hBuildStructure(IContext context, IProgressMonitor monitor)
+        throws CoreException
     {
-        return new NotifyingReconcileOperation();
-    }
+        Map<IElement, Object> newElements = context.get(NEW_ELEMENTS);
+        SourceElementBody body = new SourceElementBody();
 
-    protected void hBuildStructure(SourceElementBody body,
-        Map<IElement, Object> newElements, Object ast, String source,
-        IProgressMonitor monitor)
-    {
-        XtextResource resource = (XtextResource)ast;
+        XtextResource resource = (XtextResource)context.get(SOURCE_AST);
+        if (resource == null)
+        {
+            try
+            {
+                resource = parse(context.get(SOURCE_CONTENTS),
+                    getFile().getCharset());
+            }
+            catch (IOException e)
+            {
+                throw new CoreException(Activator.createErrorStatus(
+                    e.getMessage(), e));
+            }
+        }
+
         IParseResult parseResult = resource.getParseResult();
         if (parseResult != null)
         {
@@ -111,31 +116,8 @@ public class FooFile
                 builder.buildStructure(this, body, (Module)root);
             }
         }
-    }
 
-    /**
-     * Returns a new <code>XtextResource</code> loaded from the given source
-     * string. The resource is created in a new <code>ResourceSet</code>
-     * obtained from the <code>IResourceSetProvider</code> corresponding to
-     * this file. 
-     * 
-     * @return the new <code>XtextResource</code> loaded from the given
-     *  source string (never <code>null</code>)
-     * @throws CoreException if resource loading failed
-     */
-    @Override
-    protected Object hCreateStructuralAst(String source,
-        IProgressMonitor monitor) throws CoreException
-    {
-        try
-        {
-            return parse(source, getFile().getCharset());
-        }
-        catch (IOException e)
-        {
-            throw new CoreException(Activator.createErrorStatus(e.getMessage(),
-                e));
-        }
+        newElements.put(this, body);
     }
 
     /**
@@ -191,51 +173,7 @@ public class FooFile
      */
     protected URI getResourceUri()
     {
-        return URI.createPlatformResourceURI(getPath().toString(), true);
-    }
-
-    @Override
-    protected ElementManager hElementManager()
-    {
-        return FooModelManager.INSTANCE.getElementManager();
-    }
-
-    @Override
-    protected void hWorkingCopyModeChanged()
-    {
-        super.hWorkingCopyModeChanged();
-
-        ElementDelta.Builder builder = new ElementDelta.Builder(
-            new ElementDelta(getRoot()));
-        if (getFile().exists())
-            builder.changed(this, IElementDeltaConstants.F_WORKING_COPY);
-        else if (isWorkingCopy())
-            builder.added(this, IElementDeltaConstants.F_WORKING_COPY);
-        else
-            builder.removed(this, IElementDeltaConstants.F_WORKING_COPY);
-        FooModelManager.INSTANCE.fireElementChangeEvent(new ElementChangeEvent(
-            ElementChangeEvent.POST_CHANGE, builder.getDelta()));
-    }
-
-    private class NotifyingReconcileOperation
-        extends ReconcileOperation
-    {
-        @Override
-        public void reconcile(Object ast, NonExpiringSnapshot snapshot,
-            boolean forced, IProgressMonitor monitor) throws CoreException
-        {
-            ElementDifferencer differ = new ElementDifferencer(
-                new ElementDelta.Builder(new ElementDelta(FooFile.this)));
-
-            super.reconcile(ast, snapshot, forced, monitor);
-
-            differ.buildDelta();
-            if (!differ.isEmptyDelta())
-            {
-                FooModelManager.INSTANCE.fireElementChangeEvent(
-                    new ElementChangeEvent(ElementChangeEvent.POST_RECONCILE,
-                        differ.getDelta()));
-            }
-        }
+        return URI.createPlatformResourceURI(hFile().getFullPath().toString(),
+            true);
     }
 }

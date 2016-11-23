@@ -12,7 +12,6 @@ package org.eclipse.handly.internal.examples.basic.ui.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -20,20 +19,21 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.examples.basic.ui.model.IFooModel;
 import org.eclipse.handly.examples.basic.ui.model.IFooProject;
-import org.eclipse.handly.model.IElementChangeListener;
 import org.eclipse.handly.model.IElement;
+import org.eclipse.handly.model.IElementChangeListener;
+import org.eclipse.handly.model.IModel;
 import org.eclipse.handly.model.impl.Body;
 import org.eclipse.handly.model.impl.Element;
-import org.eclipse.handly.model.impl.ElementManager;
 
 /**
  * Represents the root Foo element corresponding to the workspace. 
  */
 public class FooModel
     extends Element
-    implements IFooModel
+    implements IFooModel, IFooElementInternal, IModel
 {
     private final IWorkspace workspace;
 
@@ -49,13 +49,15 @@ public class FooModel
     @Override
     public void addElementChangeListener(IElementChangeListener listener)
     {
-        FooModelManager.INSTANCE.addElementChangeListener(listener);
+        FooModelManager.INSTANCE.getNotificationManager().addElementChangeListener(
+            listener);
     }
 
     @Override
     public void removeElementChangeListener(IElementChangeListener listener)
     {
-        FooModelManager.INSTANCE.removeElementChangeListener(listener);
+        FooModelManager.INSTANCE.getNotificationManager().removeElementChangeListener(
+            listener);
     }
 
     @Override
@@ -81,26 +83,31 @@ public class FooModel
     }
 
     @Override
+    public int getApiLevel()
+    {
+        return ApiLevel.CURRENT;
+    }
+
+    @Override
+    public IContext getModelContext()
+    {
+        return FooModelManager.INSTANCE.getModelContext();
+    }
+
+    @Override
     public IResource hResource()
     {
         return workspace.getRoot();
     }
 
     @Override
-    protected ElementManager hElementManager()
-    {
-        return FooModelManager.INSTANCE.getElementManager();
-    }
-
-    @Override
-    protected void hValidateExistence()
+    protected void hValidateExistence(IContext context)
     {
         // always exists
     }
 
     @Override
-    protected void hBuildStructure(Object body,
-        Map<IElement, Object> newElements, IProgressMonitor monitor)
+    protected void hBuildStructure(IContext context, IProgressMonitor monitor)
         throws CoreException
     {
         IProject[] projects = workspace.getRoot().getProjects();
@@ -112,6 +119,8 @@ public class FooModel
                 fooProjects.add(new FooProject(this, project));
             }
         }
-        ((Body)body).setChildren(fooProjects.toArray(Body.NO_CHILDREN));
+        Body body = new Body();
+        body.setChildren(fooProjects.toArray(Body.NO_CHILDREN));
+        context.get(NEW_ELEMENTS).put(this, body);
     }
 }

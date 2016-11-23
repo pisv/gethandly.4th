@@ -10,30 +10,27 @@
  *******************************************************************************/
 package org.eclipse.handly.internal.examples.basic.ui.model;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.examples.basic.ui.model.IFooFile;
 import org.eclipse.handly.examples.basic.ui.model.IFooProject;
-import org.eclipse.handly.internal.examples.basic.ui.Activator;
 import org.eclipse.handly.model.IElement;
 import org.eclipse.handly.model.impl.Body;
 import org.eclipse.handly.model.impl.Element;
-import org.eclipse.handly.model.impl.ElementManager;
 
 /**
  * Represents a Foo project.
  */
 public class FooProject
     extends Element
-    implements IFooProject
+    implements IFooProject, IFooElementInternal
 {
     private final IProject project;
 
@@ -88,35 +85,14 @@ public class FooProject
     }
 
     @Override
-    protected ElementManager hElementManager()
+    protected void hValidateExistence(IContext context) throws CoreException
     {
-        return FooModelManager.INSTANCE.getElementManager();
-    }
-
-    @Override
-    protected void hValidateExistence() throws CoreException
-    {
-        if (!project.exists())
-            throw new CoreException(Activator.createErrorStatus(
-                MessageFormat.format(
-                    "Project ''{0}'' does not exist in workspace", getName()),
-                null));
-
-        if (!project.isOpen())
-            throw new CoreException(Activator.createErrorStatus(
-                MessageFormat.format("Project ''{0}'' is not open", getName()),
-                null));
-
         if (!project.hasNature(NATURE_ID))
-            throw new CoreException(Activator.createErrorStatus(
-                MessageFormat.format(
-                    "Project ''{0}'' does not have the Foo nature", getName()),
-                null));
+            throw hDoesNotExistException();
     }
 
     @Override
-    protected void hBuildStructure(Object body,
-        Map<IElement, Object> newElements, IProgressMonitor monitor)
+    protected void hBuildStructure(IContext context, IProgressMonitor monitor)
         throws CoreException
     {
         IResource[] members = project.members();
@@ -134,6 +110,8 @@ public class FooProject
                 }
             }
         }
-        ((Body)body).setChildren(fooFiles.toArray(Body.NO_CHILDREN));
+        Body body = new Body();
+        body.setChildren(fooFiles.toArray(Body.NO_CHILDREN));
+        context.get(NEW_ELEMENTS).put(this, body);
     }
 }

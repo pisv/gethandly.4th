@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.eclipse.handly.examples.basic.ui;singleton:=true
-Bundle-Version: 0.5.0.qualifier
+Bundle-Version: 0.6.0.qualifier
 Bundle-Name: %pluginName
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
@@ -14,7 +14,6 @@ Require-Bundle: org.eclipse.handly.examples.basic,
  org.eclipse.handly.xtext.ui,
  org.eclipse.xtext.ui,
  org.eclipse.xtext.ui.shared,
- org.eclipse.ui.navigator,
- org.eclipse.ui.ide
+ org.eclipse.ui.navigator
 Import-Package: org.apache.log4j
 Export-Package: org.eclipse.handly.examples.basic.ui.model
