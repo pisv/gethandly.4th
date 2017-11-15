@@ -28,8 +28,8 @@ import org.eclipse.handly.examples.basic.ui.model.IFooFile;
 import org.eclipse.handly.examples.basic.ui.model.IFooVar;
 import org.eclipse.handly.internal.examples.basic.ui.Activator;
 import org.eclipse.handly.model.IElement;
-import org.eclipse.handly.model.impl.SourceElementBody;
-import org.eclipse.handly.model.impl.WorkspaceSourceFile;
+import org.eclipse.handly.model.impl.support.SourceElementBody;
+import org.eclipse.handly.model.impl.support.WorkspaceSourceFile;
 import org.eclipse.xtext.parser.IParseResult;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.XtextResource;
@@ -85,7 +85,7 @@ public class FooFile
     }
 
     @Override
-	public void hBuildSourceStructure(IContext context,
+	public void buildSourceStructure_(IContext context,
 	    IProgressMonitor monitor) throws CoreException
     {
         Map<IElement, Object> newElements = context.get(NEW_ELEMENTS);
@@ -174,7 +174,7 @@ public class FooFile
      */
     protected URI getResourceUri()
     {
-        return URI.createPlatformResourceURI(hFile().getFullPath().toString(),
+        return URI.createPlatformResourceURI(getFile_().getFullPath().toString(),
             true);
     }
 }

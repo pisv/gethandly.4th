@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 1C-Soft LLC and others.
+ * Copyright (c) 2014, 2017 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,7 +20,7 @@ import org.eclipse.handly.junit.WorkspaceTestCase;
 import org.eclipse.handly.model.IElementChangeEvent;
 import org.eclipse.handly.model.IElementChangeListener;
 import org.eclipse.handly.model.IElementDeltaConstants;
-import org.eclipse.handly.model.impl.ElementDelta;
+import org.eclipse.handly.model.impl.support.ElementDelta;
 
 /**
  * Foo element change notification tests.
@@ -120,13 +120,15 @@ public class FooModelNotificationTest
             return;
         }
         assertNotNull(actual);
-        assertEquals(expected.hElement(), actual.hElement());
-        assertEquals(expected.hKind(), actual.hKind());
-        assertEquals(expected.hFlags(), actual.hFlags());
-        assertEquals(expected.hMovedToElement(), actual.hMovedToElement());
-        assertEquals(expected.hMovedFromElement(), actual.hMovedFromElement());
-        ElementDelta[] expectedChildren = expected.hAffectedChildren();
-        ElementDelta[] actualChildren = actual.hAffectedChildren();
+        assertEquals(expected.getElement_(), actual.getElement_());
+        assertEquals(expected.getKind_(), actual.getKind_());
+        assertEquals(expected.getFlags_(), actual.getFlags_());
+        assertEquals(expected.getMovedToElement_(),
+            actual.getMovedToElement_());
+        assertEquals(expected.getMovedFromElement_(),
+            actual.getMovedFromElement_());
+        ElementDelta[] expectedChildren = expected.getAffectedChildren_();
+        ElementDelta[] actualChildren = actual.getAffectedChildren_();
         assertEquals(expectedChildren.length, actualChildren.length);
         for (int i = 0; i < expectedChildren.length; i++)
             assertDelta(expectedChildren[i], actualChildren[i]);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 1C-Soft LLC and others.
+ * Copyright (c) 2014, 2017 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,10 +16,11 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.handly.examples.basic.foo.Def;
 import org.eclipse.handly.examples.basic.foo.Module;
 import org.eclipse.handly.examples.basic.foo.Var;
+import org.eclipse.handly.model.Elements;
 import org.eclipse.handly.model.IElement;
-import org.eclipse.handly.model.impl.Body;
-import org.eclipse.handly.model.impl.SourceElementBody;
-import org.eclipse.handly.model.impl.StructureHelper;
+import org.eclipse.handly.model.impl.support.Body;
+import org.eclipse.handly.model.impl.support.SourceElementBody;
+import org.eclipse.handly.model.impl.support.StructureHelper;
 import org.eclipse.handly.util.TextRange;
 import org.eclipse.xtext.resource.ILocationInFileProvider;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
@@ -30,8 +31,9 @@ import org.eclipse.xtext.util.ITextRegion;
  */
 class FooFileStructureBuilder
 {
-    private final StructureHelper helper;
+    private final Map<IElement, Object> newElements;
     private final ILocationInFileProvider locationProvider;
+    private final StructureHelper helper = new StructureHelper();
 
     /**
      * Constructs a new Foo file structure builder.
@@ -44,7 +46,9 @@ class FooFileStructureBuilder
     FooFileStructureBuilder(Map<IElement, Object> newElements,
         IResourceServiceProvider resourceServiceProvider)
     {
-        helper = new StructureHelper(newElements);
+        if (newElements == null)
+            throw new IllegalArgumentException();
+        this.newElements = newElements;
         if (resourceServiceProvider == null)
             throw new IllegalArgumentException();
         locationProvider = resourceServiceProvider.get(
@@ -65,7 +69,8 @@ class FooFileStructureBuilder
             buildStructure(handle, body, var);
         for (Def def : module.getDefs())
             buildStructure(handle, body, def);
-        helper.complete(body);
+        body.setChildren(helper.popChildren(body).toArray(
+            Elements.EMPTY_ARRAY));
     }
 
     private void buildStructure(FooFile parent, Body parentBody, Var var)
@@ -74,11 +79,12 @@ class FooFileStructureBuilder
             return;
 
         FooVar handle = new FooVar(parent, var.getName());
+        helper.resolveDuplicates(handle);
         SourceElementBody body = new SourceElementBody();
         body.setFullRange(getFullRange(var));
         body.setIdentifyingRange(getIdentifyingRange(var));
-        helper.addChild(parentBody, handle, body);
-        helper.complete(body);
+        newElements.put(handle, body);
+        helper.pushChild(parentBody, handle);
     }
 
     private void buildStructure(FooFile parent, Body parentBody, Def def)
@@ -88,13 +94,14 @@ class FooFileStructureBuilder
 
         int arity = def.getParams().size();
         FooDef handle = new FooDef(parent, def.getName(), arity);
+        helper.resolveDuplicates(handle);
         SourceElementBody body = new SourceElementBody();
         body.setFullRange(getFullRange(def));
         body.setIdentifyingRange(getIdentifyingRange(def));
         body.set(FooDef.PARAMETER_NAMES, def.getParams().toArray(
             new String[arity]));
-        helper.addChild(parentBody, handle, body);
-        helper.complete(body);
+        newElements.put(handle, body);
+        helper.pushChild(parentBody, handle);
     }
 
     private TextRange getFullRange(EObject eObject)

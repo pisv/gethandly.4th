@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 1C-Soft LLC and others.
+ * Copyright (c) 2014, 2017 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,9 +31,9 @@ import org.eclipse.handly.model.Elements;
 import org.eclipse.handly.model.IElement;
 import org.eclipse.handly.model.IElementDelta;
 import org.eclipse.handly.model.IElementDeltaConstants;
-import org.eclipse.handly.model.impl.Body;
-import org.eclipse.handly.model.impl.Element;
-import org.eclipse.handly.model.impl.ElementDelta;
+import org.eclipse.handly.model.impl.support.Body;
+import org.eclipse.handly.model.impl.support.Element;
+import org.eclipse.handly.model.impl.support.ElementDelta;
 
 /**
  * This class is used by the <code>FooModelManager</code> to process 
@@ -57,17 +57,6 @@ class FooDeltaProcessor
     public IElementDelta getDelta()
     {
         return builder.getDelta();
-    }
-
-    /**
-     * Returns whether Foo elements were affected by the resource change.
-     *
-     * @return <code>true</code> if no Foo elements were affected,
-     *  and <code>false</code> otherwise
-     */
-    public boolean isEmptyDelta()
-    {
-        return builder.isEmptyDelta();
     }
 
     @Override
@@ -349,12 +338,12 @@ class FooDeltaProcessor
 
     private static Body findBody(IElement element)
     {
-        return (Body)((Element)element).hFindBody();
+        return (Body)((Element)element).findBody_();
     }
 
     private static void close(IElement element)
     {
-        ((Element)element).hClose();
+        ((Element)element).close_();
     }
 
     private static IResource getResource(IPath fullPath, int resourceType)

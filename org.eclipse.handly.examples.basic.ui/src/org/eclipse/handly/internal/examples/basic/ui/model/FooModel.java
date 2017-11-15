@@ -19,21 +19,23 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.handly.ApiLevel;
 import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.examples.basic.ui.model.IFooModel;
 import org.eclipse.handly.examples.basic.ui.model.IFooProject;
+import org.eclipse.handly.model.Elements;
 import org.eclipse.handly.model.IElement;
 import org.eclipse.handly.model.IElementChangeListener;
-import org.eclipse.handly.model.IModel;
-import org.eclipse.handly.model.impl.Body;
-import org.eclipse.handly.model.impl.Element;
+import org.eclipse.handly.model.impl.IModelImpl;
+import org.eclipse.handly.model.impl.support.Body;
+import org.eclipse.handly.model.impl.support.Element;
 
 /**
  * Represents the root Foo element corresponding to the workspace. 
  */
 public class FooModel
     extends Element
-    implements IFooModel, IFooElementInternal, IModel
+    implements IFooModel, IFooElementInternal, IModelImpl
 {
     private final IWorkspace workspace;
 
@@ -83,31 +85,31 @@ public class FooModel
     }
 
     @Override
-    public int getApiLevel()
+    public int getModelApiLevel_()
     {
         return ApiLevel.CURRENT;
     }
 
     @Override
-    public IContext getModelContext()
+    public IContext getModelContext_()
     {
         return FooModelManager.INSTANCE.getModelContext();
     }
 
     @Override
-    public IResource hResource()
+    public IResource getResource_()
     {
         return workspace.getRoot();
     }
 
     @Override
-	public void hValidateExistence(IContext context)
+	public void validateExistence_(IContext context)
     {
         // always exists
     }
 
     @Override
-	public void hBuildStructure(IContext context, IProgressMonitor monitor)
+	public void buildStructure_(IContext context, IProgressMonitor monitor)
         throws CoreException
     {
         IProject[] projects = workspace.getRoot().getProjects();
@@ -120,7 +122,7 @@ public class FooModel
             }
         }
         Body body = new Body();
-        body.setChildren(fooProjects.toArray(Body.NO_CHILDREN));
+        body.setChildren(fooProjects.toArray(Elements.EMPTY_ARRAY));
         context.get(NEW_ELEMENTS).put(this, body);
     }
 }

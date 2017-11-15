@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 1C-Soft LLC and others.
+ * Copyright (c) 2014, 2017 1C-Soft LLC and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,11 +16,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.handly.context.Context;
 import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.internal.examples.basic.ui.Activator;
-import org.eclipse.handly.model.impl.ElementChangeEvent;
-import org.eclipse.handly.model.impl.ElementManager;
-import org.eclipse.handly.model.impl.IModelManager;
-import org.eclipse.handly.model.impl.INotificationManager;
-import org.eclipse.handly.model.impl.NotificationManager;
+import org.eclipse.handly.model.ElementDeltas;
+import org.eclipse.handly.model.IElementDelta;
+import org.eclipse.handly.model.impl.support.ElementChangeEvent;
+import org.eclipse.handly.model.impl.support.ElementManager;
+import org.eclipse.handly.model.impl.support.IModelManager;
+import org.eclipse.handly.model.impl.support.INotificationManager;
+import org.eclipse.handly.model.impl.support.NotificationManager;
 
 /**
  * The manager for the Foo Model. 
@@ -72,11 +74,12 @@ public class FooModelManager
         {
             Activator.log(e.getStatus());
         }
-        if (!deltaProcessor.isEmptyDelta())
+        IElementDelta delta = deltaProcessor.getDelta();
+        if (!ElementDeltas.isEmpty(delta))
         {
             getNotificationManager().fireElementChangeEvent(
                 new ElementChangeEvent(ElementChangeEvent.POST_CHANGE,
-                    deltaProcessor.getDelta()));
+                    delta));
         }
     }
 
