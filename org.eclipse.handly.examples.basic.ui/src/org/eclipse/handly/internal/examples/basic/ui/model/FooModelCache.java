@@ -1,9 +1,11 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2017 1C-Soft LLC and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Copyright (c) 2014, 2018 1C-Soft LLC and others.
+ *
+ * This program and the accompanying materials are made available under
+ * the terms of the Eclipse Public License 2.0 which is available at
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  * 
  * Contributors:
  *     Vladimir Piskarev (1C) - initial API and implementation
@@ -76,7 +78,7 @@ class FooModelCache
         else if (element instanceof IFooProject)
         {
             projectCache.put(element, body);
-            fileCache.ensureSpaceLimit(((Body)body).getChildren().length, element);
+            fileCache.ensureMaxSize(((Body)body).getChildren().length, element);
         }
         else if (element instanceof IFooFile)
             fileCache.put(element, body);
@@ -92,7 +94,7 @@ class FooModelCache
         else if (element instanceof IFooProject)
         {
             projectCache.remove(element);
-            fileCache.resetSpaceLimit(DEFAULT_FILE_SIZE, element);
+            fileCache.resetMaxSize(DEFAULT_FILE_SIZE, element);
         }
         else if (element instanceof IFooFile)
             fileCache.remove(element);

@@ -1,0 +1,29 @@
+/*******************************************************************************
+ * Copyright (c) 2014 1C LLC.
+ *
+ * This program and the accompanying materials are made available under
+ * the terms of the Eclipse Public License 2.0 which is available at
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *     Vladimir Piskarev (1C) - initial API and implementation
+ *******************************************************************************/
+grammar org.eclipse.handly.examples.basic.Foo
+	with org.eclipse.xtext.common.Terminals
+
+generate foo "http://www.eclipse.org/handly/examples/basic/Foo"
+
+Module:
+	vars += Var*
+	defs += Def*
+;
+	
+Var:
+	'var' name=ID ';'
+;
+	
+Def:
+	'def' name=ID '(' (params+=ID)? (',' params+=ID)* ')' '{' '}'
+;

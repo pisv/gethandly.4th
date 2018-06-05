@@ -1,8 +1,9 @@
 Manifest-Version: 1.0
+Automatic-Module-Name: org.eclipse.handly.examples.basic.ui.tests
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.eclipse.handly.examples.basic.ui.tests
-Bundle-Version: 0.8.0.qualifier
-Bundle-Name: Handly Basic Example Tests (Incubation)
+Bundle-Version: 1.0.0.qualifier
+Bundle-Name: Handly Basic Example Tests
 Bundle-Vendor: Eclipse Handly
 Fragment-Host: org.eclipse.handly.examples.basic.ui
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
